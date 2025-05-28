@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container my-5">
+        <h3 class="text-center mb-3">Добавить подарок</h3>
+        <div class="col-sm-6 mx-auto">
+            <form onsubmit="sendForm(this); return false;">
+                <div class="mb-3">
+                    <label for="nameInput">Название подарка</label>
+                    <input type="text" class="form-control" name="name" placeholder="Название подарка" id="nameInput">
+                </div>
+                <div class="mb-3">
+                    <label for="descriptionInput">Описание</label>
+                    <textarea name="description" class="form-control" id="descriptionInput" placeholder="Описание"></textarea></div>
+                <div class="mb-3">
+                    <input id="submitBtn" type="submit" class="btn btn-primary form-control" value="Добавить">
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-6 mx-auto" id="wishesBlock">
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        const wishesBlock = document.getElementById('wishesBlock');
+        fetch('/getWishes')
+            .then(response=>response.json())
+            .then(result=>{
+                if(result.error) throw new Error(result.error);
+                result.forEach((wish)=>{ // Перебираем массив с подарками
+                    renderWish(wish.name, wish.description, wish.id); // Отрисовываем их на экране
+                })
+            })
+            .catch(error=>{
+                console.log(error)});
+        function sendForm(form){ // Функция отправки формы
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.value = "Добавление...";
+            const formData = new FormData(form); // Объект FormData для быстрого считвания данных с формы
+            fetch('/addWish', {
+                method: "POST",
+                body: formData
+            }).then(response=>response.json())
+                .then(result=>{
+                    if(result.error) throw new Error(result.error);4
+                    if(result?.affectedRows===0) throw new Error("Запись не добавлена в БД");
+                    renderWish(formData.get('name'), formData.get('description'), result.insertId); // Отрисовываем подарок на экране
+                    form.reset(); // перезагрузка (очистка) формы
+                    submitBtn.disabled = false;
+                    submitBtn.value = "Добавть";
+                    console.log(result);
+                })
+                .catch(error=>{
+                    console.log(error)});
+        }
+
+        function renderWish(name, description, index){ // Фнкция отрисовки поарка на экране
+            const div = document.createElement('div');
+            const deleteBtn = document.createElement('button');
+            const editBtn = document.createElement('button');
+            const h4 = document.createElement('h4');
+            const p = document.createElement('p');
+            const hr = document.createElement('hr');
+            editBtn.classList.add("btn", "btn-warning", "me-3");
+            editBtn.innerText = "Редактировать";
+            editBtn.onclick = ()=>editWish(div, index);
+            deleteBtn.classList.add('btn', 'btn-danger');
+            deleteBtn.innerText = "Удалить";
+            deleteBtn.onclick = ()=>{removeWish(div, index)};
+            h4.innerText = name;
+            p.innerText = description;
+            div.append(hr, h4, p, editBtn, deleteBtn);
+            wishesBlock.append(div);
+        }
+
+        function removeWish(element, index){
+            const formData = new FormData();
+            formData.append("id", index);
+            fetch('/deleteWish', {
+                method: "DELETE",
+                body: formData,
+            }).then(response=>response.json())
+                .then(result=>{
+                    if(result.error) throw new Error(result.error);
+                    if(result?.affectedRows===0) throw new Error("В БД нет такой записи");
+                    console.log(result);
+                    element.remove();
+                })
+                .catch(error=>{
+                    console.log(error)});
+        }
+
+        function editWish(div, index){
+            const saveBtn = document.createElement('button');
+            const h4 = div.querySelector('h4');
+            const p = div.querySelector('p');
+            let name = h4.innerText;
+            let description = p.innerText;
+            saveBtn.classList.add('btn', 'btn-success');
+            div.querySelectorAll('button').forEach(btn=>btn.hidden=true);
+            h4.innerHTML = `<input type="text" value="${name}" class="form-control">`;
+            p.innerHTML = `<textarea class="form-control">${description}</textarea>`;
+            saveBtn.innerText = "Сохранить";
+            saveBtn.onclick = (e)=>{
+                h4.innerText = h4.firstChild.value;
+                p.innerText = p.firstChild.value;
+                div.querySelectorAll('button').forEach(btn=>btn.hidden=false);
+                saveBtn.remove();
+                const formData = new FormData();
+                formData.append("id", index);
+                formData.append("name", h4.innerText);
+                formData.append("description", p.innerText);
+                fetch('/editWish', {
+                    method: "PUT",
+                    body: formData,
+                }).then(response=>response.json())
+                    .then(result=>{
+                        if(result.error) throw new Error(result.error);
+                        if(result.affectedRows===0) throw new Error("В БД нет такой записи");
+                        console.log(result);
+                    })
+                    .catch(error=>{
+                        h4.innerText = name;
+                        p.innerText = description;
+                        console.log(error)});
+            }
+            div.append(saveBtn);
+        }
+    </script>
+</body>
+</html>
