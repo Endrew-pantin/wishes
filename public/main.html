@@ -114,10 +114,10 @@
                 p.innerText = p.firstChild.value;
                 div.querySelectorAll('button').forEach(btn=>btn.hidden=false);
                 saveBtn.remove();
-                const formData = new FormData();
-                formData.append("id", index);
-                formData.append("name", h4.innerText);
-                formData.append("description", p.innerText);
+                // const formData = new FormData();
+                // formData.append("id", index);
+                // formData.append("name", h4.innerText);
+                // formData.append("description", p.innerText);
                 const params= new URLSearchParams({id:index,name:h4.innerText,description:p.innerText});
                 fetch(`/editWish?${params}`, {
                     //method: "PUT",
