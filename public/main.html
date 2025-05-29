@@ -54,12 +54,14 @@
                     if(result?.affectedRows===0) throw new Error("Запись не добавлена в БД");
                     renderWish(formData.get('name'), formData.get('description'), result.insertId); // Отрисовываем подарок на экране
                     form.reset(); // перезагрузка (очистка) формы
-                    submitBtn.disabled = false;
-                    submitBtn.value = "Добавть";
+                    // submitBtn.disabled = false;
+                    // submitBtn.value = "Добавть";
                     console.log(result);
                 })
                 .catch(error=>{
-                    console.log(error)});
+                    console.log(error)})
+                .finally(()=>{submitBtn.disabled = false;
+                    submitBtn.value = "Добавть";})
         }
 
         function renderWish(name, description, index){ // Фнкция отрисовки поарка на экране

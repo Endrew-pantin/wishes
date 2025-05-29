@@ -41,7 +41,7 @@ app.post('/addWish', upload.any(), async (req, res)=>{
     try {
         const name = req.body.name;
         const description = req.body.description;
-        let result=await executeQuery(`INSERT INTO wishes (name, description) VALUES (?, ?)`, [name, description])
+        let result=await executeQuery(`INSERT INTO wishes1 (name, description) VALUES (?, ?)`, [name, description])
         res.send(result);
     } catch (error){
         console.error("Ошибка добавления записи в БД", error);
