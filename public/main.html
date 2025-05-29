@@ -82,11 +82,11 @@
         }
 
         function removeWish(element, index){
-            const formData = new FormData();
-            formData.append("id", index);
-            fetch('/deleteWish', {
+            //const formData = new FormData();
+            //formData.append("id", index);
+            fetch(`/deleteWish/${index}`, {
                 method: "DELETE",
-                body: formData,
+                //body: formData,
             }).then(response=>response.json())
                 .then(result=>{
                     if(result.error) throw new Error(result.error);
@@ -118,9 +118,10 @@
                 formData.append("id", index);
                 formData.append("name", h4.innerText);
                 formData.append("description", p.innerText);
-                fetch('/editWish', {
-                    method: "PUT",
-                    body: formData,
+                const params= new URLSearchParams({id:index,name:h4.innerText,description:p.innerText});
+                fetch(`/editWish?${params}`, {
+                    //method: "PUT",
+                    //body: formData,
                 }).then(response=>response.json())
                     .then(result=>{
                         if(result.error) throw new Error(result.error);

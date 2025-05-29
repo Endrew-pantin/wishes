@@ -48,9 +48,10 @@ app.post('/addWish', upload.any(), async (req, res)=>{
         res.status(500).send({error:"Ошибка добавления записи в БД: "+error});
     }
 });
-app.delete('/deleteWish', upload.any(),async (req, res)=>{
+app.delete('/deleteWish/:id',async (req, res)=>{
     try {
-        const id = req.body.id;
+        //const id = req.body.id;
+        const id=req.params.id;
        let result=await executeQuery(`Delete from wishes where id=?`, [id]);
         res.send(result);
     } catch (error){
@@ -58,11 +59,14 @@ app.delete('/deleteWish', upload.any(),async (req, res)=>{
         res.status(500).json({error:"Ошибка добавления записи в БД: "+error}).send();;
     }
 });
-app.put('/editWish', upload.any(),async (req, res)=>{
+app.get('/editWish',async (req, res)=>{
     try {
-        const id = req.body.id;
-        const name = req.body.name;
-        const description = req.body.description;
+        // const id = req.body.id;
+        // const name = req.body.name;
+        // const description = req.body.description;
+        const id = req.query.id;
+        const name = req.query.name;
+        const description = req.query.description;
         let result=await executeQuery(`Update wishes set name=?,description=? where id=?`, [name,description,id]);
         res.send(result);
     } catch (error){
